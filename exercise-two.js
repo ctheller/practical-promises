@@ -36,21 +36,32 @@ function problemA () {
    */
 
   // callback version
-  async.each(['poem-two/stanza-01.txt', 'poem-two/stanza-02.txt'],
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- A. callback version --');
-        green(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- A. callback version done --');
-    }
-  );
+  // async.each(['poem-two/stanza-01.txt', 'poem-two/stanza-02.txt'],
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- A. callback version --');
+  //       green(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- A. callback version done --');
+  //   }
+  // );
 
   // promise version
-  // ???
+  var promise1 = promisifiedReadFile('poem-two/stanza-01.txt').then(function(result) {
+    console.log('-- A. promise version --');
+    green(result);
+  });
+  var promise2 = promisifiedReadFile('poem-two/stanza-02.txt').then(function(result) {
+    console.log('-- A. promise version --');
+    green(result);
+  });
+
+  Promise.all([promise1, promise2]).then(function(result) {
+    console.log('-- A. promise version done --');
+  })
 
 }
 
@@ -69,21 +80,32 @@ function problemB () {
   });
 
   // callback version
-  async.each(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- B. callback version --');
-        green(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- B. callback version done --');
-    }
-  );
+  // async.each(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- B. callback version --');
+  //       green(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- B. callback version done --');
+  //   }
+  // );
 
+  var promisesArr = [];
   // promise version
-  // ???
+  filenames.forEach(function(fileName) {
+    var promise = promisifiedReadFile(fileName).then(function(result) {
+      console.log('-- B. promise version --');
+      green(result);
+    })
+    promisesArr.push(promise);
+  });
+
+  Promise.all(promisesArr).then(function(result) {
+    console.log('-- B. promise version done --');
+  })
 
 }
 
@@ -102,23 +124,32 @@ function problemC () {
   });
 
   // callback version
-  async.eachSeries(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- C. callback version --');
-        green(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      console.log('-- C. callback version done --');
-    }
-  );
+  // async.eachSeries(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- C. callback version --');
+  //       green(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     console.log('-- C. callback version done --');
+  //   }
+  // );
 
   // promise version
-  // ???
+  
+  Promise.each(filenames, function(file){
+    return promisifiedReadFile(file).then(function(result){
+      console.log('-- C. promise version --');
+      green(result);
+    })
+  }).then(function(result){
+    console.log('-- C. promise version done --');
+  })
+};
 
-}
+
 
 function problemD () {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -137,25 +168,31 @@ function problemD () {
   filenames[randIdx] = 'wrong-file-name-' + (randIdx + 1) + '.txt';
 
   // callback version
-  async.eachSeries(filenames,
-    function (filename, eachDone) {
-      readFile(filename, function (err, stanza) {
-        console.log('-- D. callback version --');
-        if (err) return eachDone(err);
-        green(stanza);
-        eachDone();
-      });
-    },
-    function (err) {
-      if (err) red(err);
-      console.log('-- D. callback version done --');
-    }
-  );
+  // async.eachSeries(filenames,
+  //   function (filename, eachDone) {
+  //     readFile(filename, function (err, stanza) {
+  //       console.log('-- D. callback version --');
+  //       if (err) return eachDone(err);
+  //       green(stanza);
+  //       eachDone();
+  //     });
+  //   },
+  //   function (err) {
+  //     if (err) red(err);
+  //     console.log('-- D. callback version done --');
+  //   }
+  // );
 
   // promise version
-  // ???
-
-}
+  Promise.each(filenames, function(file){
+    return promisifiedReadFile(file).then(function(result){
+      console.log('-- D. promise version --');
+      green(result);
+    })
+  }).catch(function(err){red(err);}).then(function(result){
+    console.log('-- D. promise version done --');
+  })
+};
 
 function problemE () {
   /* * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -165,7 +202,20 @@ function problemE () {
    */
 
   var fs = require('fs');
+   
+  
   function promisifiedWriteFile (filename, str) {
-    // your code here
-  }
+
+    return new Promise(function(resolve, reject){
+
+      fs.writeFile(filename, str, function(err){
+        if (err){
+           reject(err);
+        } else {
+        resolve();
+        }
+      })
+    })
+  };
+
 }
